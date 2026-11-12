@@ -6,7 +6,7 @@ import streamlit as st
 MAX_MESSAGES = 500
 AVATARS = ["😀", "😎", "🤖", "👽", "🐱", "🐼", "🦊", "🐸", "🔥", "⭐"]
 
-st.set_page_config(page_title="GlassChat", page_width=440, layout="centered")
+st.set_page_config(page_title="GlassChat", layout="centered")
 
 # --- Initialize Session State ---
 if "client_id" not in st.session_state:
@@ -57,13 +57,6 @@ st.markdown(
                 radial-gradient(circle at 90% 90%, #321c58 0, transparent 38%), #08111f;
     color: #eef5ff;
 }
-.chat-bubble {
-    padding: 10px 12px;
-    border-radius: 17px;
-    background: #ffffff10;
-    border: 1px solid rgba(255,255,255,.14);
-    margin-bottom: 8px;
-}
 .meta {
     font-size: 10px;
     color: #b8c5d8;
@@ -81,7 +74,6 @@ with col1:
     st.caption(f"Chatting as **{user['username']}**")
 with col2:
     if st.button("Logout", key="logout_btn"):
-        # Reset session identifier to log out / re-register user
         st.session_state.client_id = uuid.uuid4().hex
         st.rerun()
 
@@ -94,14 +86,12 @@ tab_chat, tab_profile = st.tabs(["💬 Chat Room", "👤 Profile"])
 # TAB 1: CHAT ROOM
 # ==========================================
 with tab_chat:
-    # Message container with scroll simulation
     messages_container = st.container(height=400)
     with messages_container:
         if not st.session_state.messages:
             st.info("No messages yet. Start the conversation below!")
         for m in st.session_state.messages:
             is_mine = m["username"] == user["username"]
-            align = "right" if is_mine else "left"
 
             with st.chat_message(
                 "user" if is_mine else "assistant", avatar=m.get("avatar", "🙂")
@@ -139,7 +129,7 @@ with tab_chat:
             )
             st.rerun()
 
-    # Audio recorder component (built into Streamlit natively)
+    # Audio recorder component
     audio_val = st.audio_input("Record a voice note")
     if audio_val:
         audio_bytes = audio_val.read()
@@ -186,7 +176,6 @@ with tab_profile:
         else:
             old_name = user["username"]
             user["username"] = name_clean
-            # Update historic messages & audio ownership
             for msg in st.session_state.messages:
                 if msg["username"] == old_name:
                     msg["username"] = name_clean
@@ -202,7 +191,6 @@ with tab_profile:
         with cols[idx % 5]:
             if st.button(av, key=f"avatar_{av}", use_container_width=True):
                 user["avatar"] = av
-                # Update historic avatars
                 for msg in st.session_state.messages:
                     if msg["username"] == user["username"]:
                         msg["avatar"] = av
